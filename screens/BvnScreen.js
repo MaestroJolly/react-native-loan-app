@@ -102,7 +102,7 @@ export default class BvnScreen extends React.Component {
       })
     }else {
       bvnumber = this.state.bvnumber;
-      let seckey = "FLWSECK-e6db11d1f8a6208de8cb2f94e293450e-X";
+      let seckey = "FLWSECK-XXXXXXXXXXXXXXXXXXXX-X";
       let url = "https://ravesandboxapi.flutterwave.com/v2/kyc/bvn/" + bvnumber + "?seckey=" + seckey;
         fetch(url, {
         method: 'GET',
