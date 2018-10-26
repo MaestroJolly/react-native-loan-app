@@ -40,8 +40,8 @@
 //       email = {this.state.email}
 //       firstname = {this.state.firstname}
 //       lastname = {this.state.lastname}
-//       publickey = "FLWPUBK-92e93a5c487ad64939327052e113c813-X"
-//       secretkey = "FLWSECK-61037cfe3cfc53b03e339ee201fa98f5-X"
+//       publickey = "FLWPUBK-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-X"
+//       secretkey = "FLWSECK-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-X"
 //       paymenttype = "card"
 //       meta = {
 //         [{
