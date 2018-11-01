@@ -4,6 +4,6 @@ This is a simple loan application created in react native and firebase with Rave
 
 ## Table Of Contents
 - [Prerequisites](#prerequisites)
-- [Dependencies] (#dependencies)
+- [Dependencies](#dependencies)
 - [How To Set It Up Locally](#how-to-set-it-up-locally)
 - [Deployment](#deployment)
