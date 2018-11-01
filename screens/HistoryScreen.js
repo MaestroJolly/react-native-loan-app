@@ -1,94 +1,74 @@
 import React from 'react';
 import {
-  Button,
   StyleSheet,
   Text,
   View,
-  TextInput,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
 
-import db from '../libraries/DBApi';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
-class Items extends React.Component {
-  state = {
-    data: null,
-  };
+import Firebase from '../libraries/Firebase';
 
-  componentDidMount() {
-    this.update();
-  }
-
-  render() {
-    const { data } = this.state;
-    if (data === null || data.length === 0) {
-      return null;
-    }
-
-    return (
-      <View style={{ margin: 5 }}>
-        {data.map(({ id, done, fname, lname, email, phonenumber, bvn}) => (
-          <TouchableOpacity
-            key={id}
-            onPress={() => this.props.onPressItem && this.props.onPressItem(id)}
-            style={styles.history}>
-            <Text style={styles.historyText}>{fname}</Text>
-            <Text style={styles.historyText}>{lname}</Text>
-            <Text style={styles.historyText}>{email}</Text>
-            <Text style={styles.historyText}>{phonenumber}</Text>
-            <Text style={styles.historyText}>{bvn}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  }
-
-  update() {
-    db.transaction(tx => {
-      tx.executeSql(
-        `select * from data where done = ?;`,
-        [this.props.done ? 1 : 0],
-        (_, { rows: { _array } }) => this.setState({ data: _array })
-      );
-    });
-  }
-}
+const FBDatabase = Firebase.database();
 
 
 export default class HistoryScreen extends React.Component {
-  static navigationOptions = {
-    title: 'Loan History',
+  state = {
+    dataItems: [],
   };
+
+  static navigationOptions = {
+    drawerLabel: 'Loan History',
+  };
+
+  componentDidMount() {
+    FBDatabase.ref('reg').child('loans').on('value', (snapshot) => {
+      let loanData = snapshot.val();
+      let data = Object.values(loanData);
+      this.setState({
+        dataItems: data
+      })
+      console.log(data);
+  })
+}
 
   render(){
       return (
-        <ScrollView style={styles.container}>
-          <Items
-            done={false}
-            ref={todo => (this.todo = todo)}
-            onPressItem={id =>
-              db.transaction(
-                tx => {
-                  tx.executeSql(`update data set done = 1 where id = ?;`, [id]);
-                },
-                null,
-                this.update
-              )}
-          />
-          <Items
-            done={true}
-            ref={done => (this.done = done)}
-            onPressItem={id =>
-              db.transaction(
-                tx => {
-                  tx.executeSql(`delete from data where id = ?;`, [id]);
-                },
-                null,
-                this.update
-              )}
-          />
-        </ScrollView>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.innerHeader} onPress={() => {this.props.navigation.toggleDrawer();}}>
+              <Icon name="md-menu" size={30} style={{color: '#ffffff'}}/>
+            </TouchableOpacity>
+          </View>
+          <View style={{marginTop: 20}}></View>
+          <Text style={styles.historyTitle}>Loan History</Text>
+          <View style={styles.historyHeader}>
+            <View style={{width: '50%'}}>
+              <Text style={styles.loanTitle}>Amount</Text>
+            </View>
+            <View style={{width: '50%'}}>
+              <Text style={styles.loanTitle}>Date</Text>
+            </View>
+          </View>
+          <ScrollView>
+            {this.state.dataItems.map((item, index) => {
+              return (
+                <View key={index}>
+                  <View style={styles.historyBody}>
+                    <View style={{width: '50%'}}>
+                      <Text style={styles.loanName}>{item.amount}</Text>
+                    </View>
+                    <View style={{width: '50%'}}>
+                      <Text style={styles.loanName}>{item.transdate}</Text>
+                    </View>
+                  </View>
+                </View>
+              )
+          })}
+          </ScrollView>
+        </View>
       )
   }
 }
@@ -97,32 +77,43 @@ export default class HistoryScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: 20,
+    backgroundColor: '#ffffff',
   },
-  label: {
-    color: "#ACACAC"
+  header: {
+    backgroundColor: '#1f618d'
   },
-  input: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#5499c7',
+  innerHeader: {
+    padding: 20
   },
-  formGroup: {
-    marginBottom: 20,
+  historyHeader: {
+    marginTop: 22,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%'
   },
-  history: {
-    padding: 5,
-    backgroundColor: 'white',
-    borderColor: '#5499c7',
-    borderWidth: 1,
+  historyBody: {
+    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%'
   },
-  formTitle: {
-    fontSize: 18,
+  historyTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#5499c7',
+    color: '#1f618d',
     textAlign: 'center'
   },
-  checkoutInfo: {
+  loanName: {
     fontSize: 17,
-    color: '#5499c7'
+    color: '#000000',
+    textAlign: 'center'
+  },
+  loanTitle: {
+    fontSize: 18,
+    color: '#000000',
+    fontWeight: 'bold',
+    textAlign: 'center'
   },
   bvnContainer: {
     padding: 30,
@@ -134,7 +125,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#5499c7'
+    color: '#1f618d'
   },
   bvnText: {
     fontSize: 16,
@@ -143,11 +134,6 @@ const styles = StyleSheet.create({
   historyText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#5499c7'
+    color: '#1f618d'
   },
-  productPrice: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#8f5db7'
-  }
 });

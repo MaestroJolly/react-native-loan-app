@@ -1,98 +1,35 @@
 import React from 'react';
-import {
-  Button,
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  ScrollView,
-  TouchableOpacity
-} from 'react-native';
+import { Button, StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 
-import db from '../libraries/DBApi';
+import { Ionicons as Icon } from '@expo/vector-icons';
+
 import Firebase from '../libraries/Firebase';
 
+const FBDatabase = Firebase.database();
 
 export default class BvnScreen extends React.Component {
   static navigationOptions = {
-    title: 'BVN Verification',
+    drawerLabel: 'BVN Verification',
   };
 
   constructor(props) {
     super(props);
-    this.state = {
-      firstname: this.props.navigation.state.params.firstname,
-      lastname: this.props.navigation.state.params.lastname,
+    this.state = { firstname: this.props.navigation.state.params.firstname, lastname: this.props.navigation.state.params.lastname,
       phonenumber: this.props.navigation.state.params.phonenumber,
       email: this.props.navigation.state.params.email,
       bvnumberErr: 'none',
       bvnumber: '',
       confirmedBvn: null,
       bvnConfirmed: false,
+      validationErr: 'none',
+      loading: false
     }
 
   }
 
-  componentWillMount() {
 
-    //how to read data from firebase database
-    // Firebase.database().ref('users').on('value', (data) => {
-    //   console.log(data.toJSON());
-    // })
-
-    // How to insert data into firebase database
-    // setTimeout(() => 
-    //   Firebase.database().ref('users/002').set(
-    //     {
-    //       name: 'Jane Doe',
-    //       age: 22
-    //     }
-    //   ).then(() => {
-    //     console.log('Data is Inserted');
-    //   }).catch((e) => {
-    //     console.log(e)
-    //   }), 5000)
-
-
-    // How To Update data in firebase database
-    // Firebase.database().ref('users/002').update(
-    //   {
-    //     name: 'Dave Jones',
-    //     age: 29
-    //   }
-    // ).then(() => {
-    //   console.log('Data Updated');
-    // }).catch((e) => {
-    //   console.log(e);
-    // })
-
-    // how to delete data from firebase database
-    // Firebase.database().ref('users/002').remove().then(() => {
-    //   console.log('Data Deleted');
-    // }).catch((e) => {
-    //   console.log(e);
-    // })
-  }
-
-  componentDidMount() {
-    db.transaction(tx => {
-      tx.executeSql(
-        'create table if not exists items (id integer primary autoincrement key not null, done int, value text, d1 text);'
-      );
-      tx.executeSql(
-        'create table if not exists data (id integer primary key autoincrement not null, done int, fname text, lname text, email text, phonenumber text, bvn text);'
-      );
-    });
-  }
-
-  checkDatabase() {
-    Firebase.database().ref('reg').child('id').on('value', (data) => {
-      console.log(data.toJSON());
-    })
-  }
-
-
-  buyNow(){
+ // We use this method to verify the bvn 
+  verify(){
     this.setState({
       bvnumberErr: 'none'
     })
@@ -101,9 +38,12 @@ export default class BvnScreen extends React.Component {
         bvnumberErr: 'flex'
       })
     }else {
+      this.setState({
+        loading: true
+      })
       bvnumber = this.state.bvnumber;
-      let seckey = "FLWSECK-e6db11d1f8a6208de8cb2f94e293450e-X";
-      let url = "https://ravesandboxapi.flutterwave.com/v2/kyc/bvn/" + bvnumber + "?seckey=" + seckey;
+      let seckey = "FLWSECK-***********************-X"; // add your rave secret key here
+      let url = "https://ravesandboxapi.flutterwave.com/v2/kyc/bvn/" + bvnumber + "?seckey=" + seckey; //rave bvn validation endpoint
         fetch(url, {
         method: 'GET',
         headers: {
@@ -112,57 +52,66 @@ export default class BvnScreen extends React.Component {
         },
         }).then((response) => response.json())
             .then((responseJson) => {
-                // alert(
-                //   responseJson.data.first_name + '\n' + responseJson.data.last_name,
-                //   [{
-                //     text: 'Ok',
-                //     onPress: () => this.nextPage()
-                //   }]
-                //   );
-                // console.log(responseJson);
-                // const { navigate } = this.props.navigation
-                // navigate('ApplyScreen')
+                fname = this.props.navigation.state.params.firstname;
+                fname = fname.charAt(0).toUpperCase() + fname.substr(1);
+                lname = this.props.navigation.state.params.lastname;
+                lname = lname.charAt(0).toUpperCase() + lname.substr(1);
+                phonenumber = this.props.navigation.state.params.phonenumber;
+
+                if (fname !== responseJson.data.first_name || lname !== responseJson.data.last_name || phonenumber !== responseJson.data.phone_number){
                   this.setState({
+                    loading: false,
+                    validationErr: 'flex'
+                  })
+                }else{
+                  this.setState({
+                    loading: false,
                     bvnConfirmed: true,
                     bvnumber: '',
                     confirmedBvn: responseJson.data.bvn,
                   })
-
-                  let id = 0;
-                  // let fbUrl = new Firebase("https://loan-app-abebb.firebaseio.com/reg");
-                    console.log(this.checkDatabase());
-
-                  Firebase.database().ref('reg').set(
+                  // if users details is successfully validated with the bvn validation, user's details gets added to firebase database
+                  FBDatabase.ref('reg').child('users').push().set(
                     {
-                      id: 1,
-                      fname: this.state.firstname,
-                      lname: this.state.lastname,
+                      fname: fname,
+                      lname: lname,
                       email: this.state.email,
-                      pnumber: this.state.phonenumber,
+                      pnumber: phonenumber,
                       bvn: this.state.confirmedBvn
                     }
                   ).then(() => {
                     console.log('Data inserted successfully');
                   }).catch((e) => {
+                    this.setState({
+                      loading: false
+                    })
                     console.log(e);
                   })
-                })
+                }
+              })
               .catch((error) => {
+                this.setState({
+                  loading: false
+                })
               console.error(error);
           })
       }
 
     }
 
+    // method to navigate to the Charge Screen and pass the data to the screen
     nextPage(){
-      // const { navigate } = this.props.navigation
-      // navigate('ApplyScreen')
+      const { navigate } = this.props.navigation
+      navigate('ChargeScreen', {firstname: this.state.firstname, lastname: this.state.lastname, phonenumber: this.state.phonenumber, email: this.state.email, bvn: this.state.confirmedBvn})
     }
      
+    // method to navigate to go back to the apply screen
+    goBack(){
+      const { navigate } = this.props.navigation
+      navigate('ApplyScreen', {firstname: this.state.firstname, lastname: this.state.lastname, phonenumber: this.state.phonenumber, email: this.state.email})
+    }
   
   render() {
-
-    let bvnDetails = <View></View>
 
     if (this.state.bvnConfirmed === true){
       bvnDetails = (<View style={styles.bvnContainer}>
@@ -173,21 +122,19 @@ export default class BvnScreen extends React.Component {
         <Text style={styles.bvnText}>{this.state.phonenumber}</Text>
         <Text style={styles.bvnText}>{this.state.confirmedBvn}</Text>
         <Button
-              onPress={() => this.add(this.state.firstname, this.state.lastname, this.state.email, this.state.phonenumber, this.state.confirmedBvn)}
-              title="Continue"
-              color="#5499c7"
+              onPress={() => this.nextPage()}
+              title="Tokenize Card"
+              color="#1f618d"
               accessibilityLabel="Proceed Button To Tokenize Card"
             />
         </View>
         
         )
-    }
-
-    return (
-        <ScrollView style={styles.container}>
-            <View style={{marginVertical: 10}}></View>
+    }else{
+      bvnDetails = (
+          <View>
             <Text style={styles.formTitle}>Verify Your BVN.</Text>
-            <View style={styles.formGroup}>
+            <View style={{marginVertical: 10}}></View>
             <View style={styles.input}>
               <View style={{ paddingVertical: 10, flexDirection: 'row' }}>
                 <TextInput
@@ -199,82 +146,82 @@ export default class BvnScreen extends React.Component {
                   onChangeText={(bvnumber) => this.setState({bvnumber})}
                   value={this.state.bvnumber}
                 />
-              </View>
+            </View>
             </View>
             <Text style={{ color: '#EE312A', fontSize: 10, display: this.state.bvnumberErr, fontWeight: 'bold', marginTop: 5 }}>Enter your correct BVN</Text>
-            </View>
-            <Button
-              onPress={() => this.buyNow()}
-              title="Proceed"
-              color="#5499c7"
-              accessibilityLabel="Proceed Button For Loan"
-            />
-            <View style={{ marginVertical: 20 }}></View>
-            { bvnDetails }
-        </ScrollView>
-      );
+            <Text style={{ color: '#EE312A', fontSize: 10, display: this.state.validationErr, fontWeight: 'bold', marginTop: 5 }}>Provide your valid registration details</Text>
+            <View style={{marginVertical: 20}}></View>
+          <Button
+            onPress={() => this.verify()}
+            title="Verify"
+            color="#1f618d"
+            accessibilityLabel="Proceed Button For Loan"
+            disabled={(this.state.loading == false) ? false : true}
+          />
+          <View style={{marginVertical: 10}}></View>
+          <Button
+            onPress={() => this.goBack()}
+            title="Go Back"
+            color="#5a5a5a"
+            accessibilityLabel="Go Back To Apply Form"
+          />
+          <View style={{ marginVertical: 20 }}></View>
+        </View>
+      )
     }
 
-
-    add(fname, lname, email, phonenumber, bvn) {
-      // let dateTime = new Date();
-      // let dateTimeText = dateTime.toString();
-      // console.log(dateTimeText);
-      console.log("hellooo");
-      db.transaction(
-        tx => {
-          tx.executeSql('insert into data (done, fname, lname, email, phonenumber, bvn) values (0, ?, ?, ?, ?, ?)', [fname, lname, email, phonenumber, bvn]);
-          tx.executeSql('select * from data', [], (_, { rows }) =>
-            console.log(JSON.stringify(rows))
-          );
-        },
-        null,
-        this.update
+    return (
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.innerHeader} onPress={() => {this.props.navigation.toggleDrawer();}}>
+              <Icon name="md-menu" size={30} style={{color: '#ffffff'}}/>
+            </TouchableOpacity>
+          </View>
+          <View style={{marginVertical: 20}}></View>
+          <ScrollView style={styles.formBody}>
+          { bvnDetails }
+          </ScrollView>
+        </View>
       );
-      // const { navigate } = this.props.navigation
-      // navigate('ApplyScreen')
     }
-  
-    update = () => {
-      this.todo && this.todo.update();
-      this.done && this.done.update();
-    };
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    marginTop: 20,
+    backgroundColor: '#ffffff',
+  },
+  formBody: {
     paddingHorizontal: 25,
     paddingBottom: 50,
     height: '100%'
+  },
+  header: {
+    backgroundColor: '#1f618d'
+  },
+  innerHeader: {
+    padding: 20
   },
   label: {
     color: "#ACACAC"
   },
   input: {
     borderBottomWidth: 2,
-    borderBottomColor: '#5499c7',
+    borderBottomColor: '#1f618d',
   },
   formGroup: {
     marginBottom: 20,
   },
-  product: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 30
-  },
   formTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#5499c7',
+    color: '#1f618d',
     textAlign: 'center'
-  },
-  checkoutInfo: {
-    fontSize: 17,
-    color: '#5499c7'
   },
   bvnContainer: {
     padding: 30,
-    borderColor: '#5499c7',
+    borderColor: '#1f618d',
     borderRadius: 4,
     borderWidth: 1
   },
@@ -282,20 +229,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#5499c7'
+    color: '#1f618d'
   },
   bvnText: {
     fontSize: 16,
     textAlign: 'center',
-  },
-  productName: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#5499c7'
-  },
-  productPrice: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#8f5db7'
   }
 });

@@ -1,60 +1,51 @@
 import React from 'react';
-import {
-  Button,
-  StyleSheet,
-  Text,
-  View,
-  TouchableHighlight,
-} from 'react-native';
+import { Button, StyleSheet, Text, View, TouchableOpacity, TouchableHighlight } from 'react-native';
 
-
-// import { BookOne } from '../src/images';
+import { Ionicons as Icon } from '@expo/vector-icons';
 
 export default class HomeScreen extends React.Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      count: 0
-    }
-  }
+  
+  // adding our home screen to the drawer navigation
   static navigationOptions = {
-    title: 'Loan App',
+    drawerLabel: 'Loan App',
   };
 
+  // method to navigate to loan application screen
   apply(){
     const { navigate } = this.props.navigation
     navigate('ApplyScreen')
   }
 
+  // method to navigate to loan history screen
   viewLoans(){
-    // this.setState({
-    //   count: this.state.count++
-    // })
-    // alert('this is working');
     const { navigate } = this.props.navigation
     navigate('HistoryScreen')
   }
 
   render() {
-
     return (
         <View style={styles.container}>
+          <View style={styles.header}>
+              <TouchableOpacity style={styles.innerHeader} onPress={() => {this.props.navigation.toggleDrawer();}}>
+                <Icon name="md-menu" size={30} style={{color: '#ffffff'}}/>
+              </TouchableOpacity>
+          </View>
           <View style={styles.welcome}>
             <View style={{marginVertical: 10}}></View>
-            <Text style={styles.welcomeMsg}>Welcome User, Apply To Secure Your Loans.</Text>
+            <Text style={styles.welcomeMsg}>Welcome user, Apply To Secure Your Loans.</Text>
             <Button
               onPress={() => this.apply()}
-              title="Apply For Loan"
-              color="#5499c7"
+              title="Apply"
+              color="#1f618d"
               accessibilityLabel="Secure Loans Button"
             />
+            <View style={{ marginVertical: 20 }}></View>
+            <TouchableHighlight onPress={() => this.viewLoans()}>
+              <View style={styles.loanHistory}>
+                    <Text style={{color: '#1f618d'}}>View Loan History</Text>
+              </View>
+            </TouchableHighlight>
           </View>
-          <View style={{ marginVertical: 20 }}></View>
-          <TouchableHighlight onPress={() => this.viewLoans()}>
-            <View style={styles.loanHistory}>
-                  <Text>View Loan History</Text>
-            </View>
-          </TouchableHighlight>
         </View>
       );
     }
@@ -63,30 +54,31 @@ export default class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ebedef',
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 20,
+    backgroundColor: '#ffffff',
   },
   welcome: {
     alignItems: 'center',
     justifyContent: 'center',
   },
+  header: {
+    backgroundColor: '#1f618d'
+  },
+  innerHeader: {
+    padding: 20,
+  },
   welcomeMsg: {
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: 30,
     fontSize: 24,
-    textAlign: 'center'
-  },
-  getLoanButton: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#5499c7'
+    textAlign: 'center',
+    color: '#1f618d'
   },
   loanHistory: {
-    borderColor: '#5499c7',
+    borderColor: '#1f618d',
     borderWidth: 1,
     borderRadius: 4,
-    padding: 20
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 });
