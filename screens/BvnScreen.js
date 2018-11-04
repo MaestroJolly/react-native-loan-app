@@ -70,7 +70,7 @@ export default class BvnScreen extends React.Component {
                     bvnumber: '',
                     confirmedBvn: responseJson.data.bvn,
                   })
-                  // if users details is successfully validated with the bvn validation, user's details gets added to firebase database
+
                   FBDatabase.ref('reg').child('users').push().set(
                     {
                       fname: fname,
@@ -99,13 +99,11 @@ export default class BvnScreen extends React.Component {
 
     }
 
-    // method to navigate to the Charge Screen and pass the data to the screen
     nextPage(){
       const { navigate } = this.props.navigation
       navigate('ChargeScreen', {firstname: this.state.firstname, lastname: this.state.lastname, phonenumber: this.state.phonenumber, email: this.state.email, bvn: this.state.confirmedBvn})
     }
      
-    // method to navigate to go back to the apply screen
     goBack(){
       const { navigate } = this.props.navigation
       navigate('ApplyScreen', {firstname: this.state.firstname, lastname: this.state.lastname, phonenumber: this.state.phonenumber, email: this.state.email})

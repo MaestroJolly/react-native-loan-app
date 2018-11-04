@@ -22,6 +22,7 @@ export default class ChargeScreen extends React.Component {
     };
   }
 
+  // method to navigate pass the data states to the account screen
   goToAccountScreen() {
     const { navigate } = this.props.navigation
     navigate('AccountScreen', {firstname: this.state.firstname, lastname: this.state.lastname, phonenumber: this.state.phonenumber,bvn: this.state.bvn, email: this.state.email, embedtoken: this.state.embedtoken});
