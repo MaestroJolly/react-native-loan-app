@@ -42,7 +42,7 @@ export default class BvnScreen extends React.Component {
         loading: true
       })
       bvnumber = this.state.bvnumber;
-      let seckey = "FLWSECK-***********************-X"; // add your rave secret key here
+      let seckey = "FLWSECK-61037cfe3cfc53b03e339ee201fa98f5-X"; // add your rave secret key here
       let url = "https://ravesandboxapi.flutterwave.com/v2/kyc/bvn/" + bvnumber + "?seckey=" + seckey; //rave bvn validation endpoint
         fetch(url, {
         method: 'GET',

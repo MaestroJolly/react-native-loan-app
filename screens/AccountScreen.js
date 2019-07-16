@@ -106,7 +106,7 @@ export default class AccountScreen extends React.Component {
         "account_bank" : this.state.accountbank,
         "account_number": this.state.accountnumber,
         "amount": this.state.amount,
-        "seckey": "FLWSECK-*************************-X",
+        "seckey": "FLWSECK-cdbf6713ce1ceb507b1f03fa44040f56-X",
         "narration": "Approved Loan Transfer",
         "currency": "NGN",
         "reference": "LT-"+ Date.now()

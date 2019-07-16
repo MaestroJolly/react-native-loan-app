@@ -54,8 +54,8 @@ export default class ChargeScreen extends React.Component {
       email = {this.state.email}
       firstname = {this.state.firstname}
       lastname = {this.state.lastname}
-      publickey = "FLWPUBK-********************************-X" //rave public key
-      secretkey = "FLWSECK-********************************-X" //rave private key
+      publickey = "FLWPUBK-92e93a5c487ad64939327052e113c813-X" //rave public key
+      secretkey = "FLWSECK-61037cfe3cfc53b03e339ee201fa98f5-X" //rave private key
       paymenttype = "card"
       meta = {
         [{

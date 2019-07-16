@@ -30,7 +30,7 @@ export default class HistoryScreen extends React.Component {
       this.setState({
         dataItems: data
       })
-      console.log(data);
+      // console.log(data);
   })
 }
 
